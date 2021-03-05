@@ -4,6 +4,8 @@
 
 This is an extension of the `paramedic` R package to include longitudinal effects for estimating microbial concentration. See the original README for `paramedic` below.
 
+
+
 ------------------------------
 
 # `R/paramedic`: Predicting Absolute and Relative Abundance by Modeling Efficiency to Derive Intervals and Concentrations <img src="man/figures/paramedic-logo.png" align="right" width="165px"/>
