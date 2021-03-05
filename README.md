@@ -1,3 +1,11 @@
+# STAT 571 - Longitudinal Analysis of Microbial Abundance
+
+## Overview
+
+This is an extension of the `paramedic` R package to include longitudinal effects for estimating microbial concentration. See the original README for `paramedic` below.
+
+------------------------------
+
 # `R/paramedic`: Predicting Absolute and Relative Abundance by Modeling Efficiency to Derive Intervals and Concentrations <img src="man/figures/paramedic-logo.png" align="right" width="165px"/>
 
 [![Build Status](https://travis-ci.org/statdivlab/paramedic.svg?branch=master)](https://travis-ci.org/statdivlab/paramedic)
