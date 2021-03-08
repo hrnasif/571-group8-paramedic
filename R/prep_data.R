@@ -156,7 +156,8 @@ make_paramedic_tibbles <- function(W, V, X, k, inits_lst,
 #' @importFrom stats var
 make_paramedic_stan_data <- function(k, W_mat, V_mat, X_mat, inits_lst, 
                                      sigma_beta, sigma_Sigma, 
-                                     alpha_sigma, kappa_sigma, 
+                                     alpha_sigma, kappa_sigma,
+                                     sigma_epsilon,
                                      alpha_phi, beta_phi,
                                      n_chains, centered = FALSE) {
     N <- ifelse(k > 0, dim(W_mat)[2], dim(W_mat)[1])
@@ -168,6 +169,7 @@ make_paramedic_stan_data <- function(k, W_mat, V_mat, X_mat, inits_lst,
                      K = k,
                      sigma_beta = sigma_beta, sigma_Sigma = sigma_Sigma,
                      alpha_sigma = alpha_sigma, kappa_sigma = kappa_sigma,
+                     sigma_epsilon = sigma_epsilon,
                      alpha_phi = alpha_phi, beta_phi = beta_phi)
     # get inits from the naive estimator
     naive_estimator <- function(idx, relatives, absolutes, known_absolute) {

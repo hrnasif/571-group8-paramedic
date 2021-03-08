@@ -1,5 +1,7 @@
     // sample size
     int<lower=1> N;
+    // number of longitudinal samples
+    int<lower=1> T;
     // num taxa with observed absolute abundance
     int<lower=1> q_obs;
     // overall num taxa
@@ -15,6 +17,7 @@
     // hyperparameters
     real sigma_beta;
     real sigma_Sigma;
+    real<lower=0> sigma_epsilon; // Variance of the noise
     // 0 for both = efficiency-naive model
     // otherwise, fit varying-efficiency model
     real<lower=0> alpha_sigma;

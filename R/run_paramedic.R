@@ -45,6 +45,7 @@ run_paramedic <- function(W, V, X = V[, 1, drop = FALSE], k = 0,
                       n_iter = 10500, n_burnin = 10000, n_chains = 4, stan_seed = 4747,
                       centered = FALSE, inits_lst = NULL,
                       sigma_beta = sqrt(50), sigma_Sigma = sqrt(50), alpha_sigma = 2, kappa_sigma = 1, 
+                      sigma_epsilon = 1,
                       alpha_phi = 0, beta_phi = 0, sigma_xi = 1,
                       ...) {
     # --------------
@@ -63,7 +64,8 @@ run_paramedic <- function(W, V, X = V[, 1, drop = FALSE], k = 0,
     # ----------------------------------------
     data_inits_lst <- make_paramedic_stan_data(k, W_mat, V_mat, X_mat, inits_lst, 
                                                sigma_beta, sigma_Sigma, 
-                                               alpha_sigma, kappa_sigma, 
+                                               alpha_sigma, kappa_sigma,
+                                               sigma_epsilon,
                                                alpha_phi, beta_phi,
                                                n_chains, centered)
     data_lst <- data_inits_lst$data_lst

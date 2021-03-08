@@ -98,6 +98,10 @@ posterior_predict.paramedic <- function(object, W = NULL, V = NULL,
     structure(draws, class = c("ppd", class(draws)))
 }
 
+hello_world <- function() {
+    print("hello eva")
+}
+
 # extract relevant quantities
 # @param object A stanfit object
 # @param draws Number of draws
