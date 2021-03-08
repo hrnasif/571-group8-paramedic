@@ -5,6 +5,7 @@
 #' @param W The relative abundance data, e.g., from broad range 16S sequencing with "universal" primers. Expects data (e.g., matrix, data.frame, tibble) with sample identifiers in the first column. Sample identifiers must be the same between W and V, and the column must have the same name in W and V.
 #' @param V The absolute abundance data, e.g., from taxon-specific absolute primers. Expects data (e.g., matrix, data.frame, tibble) with sample identifiers in the first column. Sample identifiers must be the same between W and V, and the column must have the same name in W and V.
 #' @param X The covariate data. Expects data (e.g., matrix, data.frame, tibble) with sample identifiers in the first column. Sample identifiers must be the same between W, V, and X, and the column must have the same name in W, V, and X. If X only consists of the subject identifiers, then no covariates are used.
+#' @param n_samp the number of samples per subject
 #' @param k the number of batches that the relative abundance data W were analyzed in. If k = 0 (the default), then batch effects are not considered.
 #' @param n_iter The total number of iterations per chain to be run by the Stan algorithm. Defaults to 10500.
 #' @param n_burnin The total number of warmups per chain to be run by the Stan algorithm. Defaults to 10000.
@@ -41,7 +42,7 @@
 #' @seealso \code{\link[rstan]{stan}} and \code{\link[rstan]{sampling}} for specific usage of the \code{stan} and \code{sampling} functions.
 #'
 #' @export
-run_paramedic <- function(W, V, X = V[, 1, drop = FALSE], k = 0,
+run_paramedic <- function(W, V, X = V[, c(1:2), drop = FALSE], n_samp, k = 0,
                       n_iter = 10500, n_burnin = 10000, n_chains = 4, stan_seed = 4747,
                       centered = FALSE, inits_lst = NULL,
                       sigma_beta = sqrt(50), sigma_Sigma = sqrt(50), alpha_sigma = 2, kappa_sigma = 1, 
@@ -50,18 +51,18 @@ run_paramedic <- function(W, V, X = V[, 1, drop = FALSE], k = 0,
     # --------------
     # error messages
     # --------------
-    check_entered_data(W, V, X, k, inits_lst, sigma_beta, sigma_Sigma, alpha_sigma, kappa_sigma)
+    check_entered_data(W, V, X, n_samp, k, inits_lst, sigma_beta, sigma_Sigma, alpha_sigma, kappa_sigma)
     # ---------------------------
     # pre-processing and warnings
     # ---------------------------
-    pre_processed_lst <- make_paramedic_tibbles(W, V, X, k, inits_lst, sigma_beta, sigma_Sigma, alpha_sigma, kappa_sigma)
+    pre_processed_lst <- make_paramedic_tibbles(W, V, X, n_samp, k, inits_lst, sigma_beta, sigma_Sigma, alpha_sigma, kappa_sigma)
     W_mat <- pre_processed_lst$w_mat
     V_mat <- pre_processed_lst$v_mat
     X_mat <- pre_processed_lst$x_mat
     # ----------------------------------------
     # set up the data and initial values lists
     # ----------------------------------------
-    data_inits_lst <- make_paramedic_stan_data(k, W_mat, V_mat, X_mat, inits_lst, 
+    data_inits_lst <- make_paramedic_stan_data(n_samp, k, W_mat, V_mat, X_mat, inits_lst, 
                                                sigma_beta, sigma_Sigma, 
                                                alpha_sigma, kappa_sigma, 
                                                alpha_phi, beta_phi,
