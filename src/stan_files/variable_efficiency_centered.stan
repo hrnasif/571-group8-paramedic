@@ -8,7 +8,7 @@ data{
 }
 parameters{
     // first-level parameters
-    vector[q] log_mu[N];
+    vector[q] log_mu[N_subj];
     // declares shared parameters log_e,
     // beta_0, beta_1, log_Sigma,
     // sigma_e, phi
@@ -23,7 +23,7 @@ model {
     // sigma_e, log_e, and phi
 #include /model/shared_model_paramedic.stan
 
-    for (i in 1:N){
+    for (i in 1:N_subj){
         if (d > 0) {
             log_mu[i] ~ normal(beta_0 + (X[i] * beta_1)', exp(log_Sigma));
         }
@@ -40,7 +40,7 @@ model {
     }
 }
 generated quantities{
-    vector[q] mu[N];
+    vector[q] mu[N_subj];
     vector[q] e;
     vector[q] Sigma;
 

@@ -51,8 +51,8 @@ check_entered_data <- function(W, V, X, n_samp, k, inits_lst, sigma_beta, sigma_
     if (length(unique(unlist(W[,1])))*n_samp != dim(W)[1]) stop("Subjects must have the same number of samples")
     # error if the id columns are named different things
     if ("data.frame" %in% class(W) | "tbl" %in% class(W)) {
-        if (names(W)[1:2] != names(V)[1:2]) stop("W and V must have the same name ")
-        if (names(W)[1:2] != names(X)[1:2]) stop("W and X must have the same name.")
+        if (sum(names(W)[1:2] != names(V)[1:2]) !=0 ) stop("W and V must have the same name ")
+        if (sum(names(W)[1:2] != names(X)[1:2]) !=0 ) stop("W and X must have the same name.")
     } else {
         if (colnames(W)[1:2] != colnames(V)[1:2]) stop("W and V must have the same name ")
         if (colnames(W)[1:2] != colnames(X)[1:2]) stop("W and X must have the same name.")
@@ -129,8 +129,14 @@ make_paramedic_tibbles <- function(W, V, X, n_samp, k, inits_lst,
         X_mat <- as.matrix(X)[, -c(1,2), drop = FALSE]    
     }
     
+    # Getting subject-specific standard deviations
+    sigma_epsilon <- V_tbl %>% dplyr::group_by(subject_id) %>%
+        dplyr::summarise(dplyr::across(!ends_with("id"), function(x){sd(log(x+1))})) %>% 
+        rowMeans()
+    
     return(list(w_tbl = W_tbl, v_tbl = V_tbl, x_tbl = X_tbl, 
-                w_mat = W_mat, v_mat = V_mat, x_mat = X_mat))
+                w_mat = W_mat, v_mat = V_mat, x_mat = X_mat,
+                sigma_epsilon_arry = sigma_epsilon))
 }
 
 #' @param n_samp the number of samples per subject
@@ -156,6 +162,8 @@ make_paramedic_tibbles <- function(W, V, X, n_samp, k, inits_lst,
 #' prior distribution on \eqn{phi} (the optional Negative Binomial 
 #' dispersion parameter). Defaults to 0 (in which case a Poisson distribution
 #' on V is used).
+#' @param sigma_epsilon Hyperparameter specifying the subject-specific standard
+#' deviation in the longtidunal model setting. Defaults to array of 50.
 #' @param n_chains the number of chains to run
 #' @param centered whether or not to use the centered parameterization of the 
 #' stan algorithm. Defaults to \code{FALSE}.
@@ -165,7 +173,7 @@ make_paramedic_tibbles <- function(W, V, X, n_samp, k, inits_lst,
 make_paramedic_stan_data <- function(n_samp, k, W_mat, V_mat, X_mat, inits_lst, 
                                      sigma_beta, sigma_Sigma, 
                                      alpha_sigma, kappa_sigma, 
-                                     alpha_phi, beta_phi,
+                                     alpha_phi, beta_phi, sigma_epsilon,
                                      n_chains, centered = FALSE) {
     N <- ifelse(k > 0, dim(W_mat)[2], dim(W_mat)[1])
     n_subj <- N/n_samp
@@ -173,11 +181,11 @@ make_paramedic_stan_data <- function(n_samp, k, W_mat, V_mat, X_mat, inits_lst,
     q_obs <- ifelse(k > 0, dim(V_mat)[3], dim(V_mat)[2])
     d <- dim(X_mat)[2]
     data_lst <- list(W = W_mat, V = V_mat, X = X_mat,
-                     N = N, n_subj = n_subj, n_samp = n_samp, q = q, 
+                     N_subj = n_subj, N_samp = n_samp, q = q, 
                      q_obs = q_obs, d = d, K = k,
                      sigma_beta = sigma_beta, sigma_Sigma = sigma_Sigma,
                      alpha_sigma = alpha_sigma, kappa_sigma = kappa_sigma,
-                     alpha_phi = alpha_phi, beta_phi = beta_phi)
+                     alpha_phi = alpha_phi, beta_phi = beta_phi, sigma_epsilon = sigma_epsilon)
     # get inits from the naive estimator
     naive_estimator <- function(idx, relatives, absolutes, known_absolute) {
         # get the sum of the relative abundances
