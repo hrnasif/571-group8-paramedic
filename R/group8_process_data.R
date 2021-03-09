@@ -10,7 +10,7 @@
 # 
 # 
 # ######### Obtaining absolute abundance data #
-# absolute <- absolute[,-1] %>% rename(subject_id = Participant) %>% 
+# absolute <- absolute[,-1] %>% rename(subject_id = Participant) %>%
 #   group_by(subject_id) %>% mutate(sample_id = 1:n())
 # 
 # drop_cols = c("Hours_In_Study", "Total_16S")
@@ -30,15 +30,15 @@
 # colnames(relative) <- gsub("\\[|\\]|\\(|\\)", "", colnames(relative))
 # colnames(relative) <- gsub("\\s|\\/", "_", colnames(relative))
 # 
-# relative <- relative[,-1] %>% rename(subject_id = Participant, 
+# relative <- relative[,-1] %>% rename(subject_id = Participant,
 #                                 Lactobacillus_crispatus = Lactobacillus_crispatus_helveticus,
 #                                 Megasphaera.genomosp..type_1 =  Megasphaera_genomosp._type_1,
-#                                 BVAB2..species = BVAB2_species) %>% 
-#   group_by(subject_id) %>% mutate(sample_id = 1:n()) %>% 
+#                                 BVAB2..species = BVAB2_species) %>%
+#   group_by(subject_id) %>% mutate(sample_id = 1:n()) %>%
 #   relocate(subject_id, sample_id, Gardnerella_vaginalis,
 #                   Lactobacillus_crispatus, Lactobacillus_iners,
 #                   Lactobacillus_jensenii, Megasphaera.genomosp..type_1, BVAB2..species,
-#                   Atopobium_vaginae) %>% 
+#                   Atopobium_vaginae) %>%
 #   select(-one_of("Hours_In_Study"))
 # 
 # colnames(relative)[qpcr_ind] = colnames(absolute)[qpcr_ind]
@@ -55,11 +55,11 @@
 # set.seed(123)
 # subjs <- sample(unique(absolute$subject_id), 3, replace = F)
 # 
-# absolute_dt <- absolute %>% filter(subject_id %in% subjs & sample_id <= 10)
-# relative_dt <- relative %>% filter(subject_id %in% subjs & sample_id <= 10)
+# group8_qpcr_data <- absolute %>% filter(subject_id %in% subjs & sample_id <= 10)
+# group8_16S_data <- relative %>% filter(subject_id %in% subjs & sample_id <= 10)
 # 
-# save(absolute_dt, file = "data/group8_qpcr_data.rda")
-# save(relative_dt, file = "data/group8_16S_data.rda")
+# save(group8_qpcr_data, file = "data/group8_qpcr_data.rda")
+# save(group8_16S_data, file = "data/group8_16S_data.rda")
 # 
 # # reference
 # load("data/example_16S_data.rda")
