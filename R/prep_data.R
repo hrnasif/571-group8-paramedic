@@ -46,9 +46,9 @@ check_entered_data <- function(W, V, X, n_samp, k, inits_lst, sigma_beta, sigma_
     # error if there is any difference between the second column (sample ID) of W and V
     if (length(setdiff(as.numeric(unlist(W[, 2])), as.numeric(unlist(V[, 2])))) != 0) stop("W and V must have the same samples.")
     # error if there is any difference between the second column (sample ID) of X and V
-    if (length(setdiff(as.numeric(unlist(V[, 2])), as.numeric(unlist(x[, 2])))) != 0) stop("V and X must have the same samples.")
+    if (length(setdiff(as.numeric(unlist(V[, 2])), as.numeric(unlist(X[, 2])))) != 0) stop("V and X must have the same samples.")
     # error if subjects do not have the same number of samples
-    if (length(unique(W[,1]))*n_samp != dim(W)[1]) stop("Subjects must have the same number of samples")
+    if (length(unique(unlist(W[,1])))*n_samp != dim(W)[1]) stop("Subjects must have the same number of samples")
     # error if the id columns are named different things
     if ("data.frame" %in% class(W) | "tbl" %in% class(W)) {
         if (names(W)[1:2] != names(V)[1:2]) stop("W and V must have the same name ")
