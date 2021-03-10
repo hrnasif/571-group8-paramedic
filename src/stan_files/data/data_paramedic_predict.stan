@@ -3,7 +3,7 @@ int<lower=1> N_subj;
 // number of samples for each subject
 int<lower=1> N_samp;
 // number of samples
-int <lower=1> N_samples
+int <lower=1> N_samples;
 // num taxa with observed absolute abundance
 int<lower=1> q_obs;
 // overall num taxa
