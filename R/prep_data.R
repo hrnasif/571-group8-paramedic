@@ -181,7 +181,7 @@ make_paramedic_stan_data <- function(n_samp, k, W_mat, V_mat, X_mat, inits_lst,
     q_obs <- ifelse(k > 0, dim(V_mat)[3], dim(V_mat)[2])
     d <- dim(X_mat)[2]
     data_lst <- list(W = W_mat, V = V_mat, X = X_mat,
-                     N_subj = n_subj, N_samp = n_samp, q = q, 
+                     N_subj = n_subj, N_samp = n_samp, N_total = n_subj*n_samp, q = q, 
                      q_obs = q_obs, d = d, K = k,
                      sigma_beta = sigma_beta, sigma_Sigma = sigma_Sigma,
                      alpha_sigma = alpha_sigma, kappa_sigma = kappa_sigma,

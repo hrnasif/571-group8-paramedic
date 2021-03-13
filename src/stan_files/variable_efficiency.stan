@@ -8,7 +8,7 @@ data{
 }
 parameters{
     // first-level parameters
-    vector[q] log_mu_tilde[N_subj*N_samp];
+    vector[q] log_mu_tilde[N_total];
     // declares shared parameters log_e,
     // beta_0, beta_1, log_Sigma,
     // sigma_e, phi
@@ -37,7 +37,7 @@ model {
     }
 }
 generated quantities{
-    vector[q] mu_it[N_subj*N_samp];
+    vector[q] mu_it[N_total];
     vector[q] e;
     vector[q] Sigma;
 

@@ -8,6 +8,6 @@
     // control the es
     real<lower=0> sigma_e;
     // control overdispersion in V
-    vector<lower=0>[N_subj * N_samp] phi;
+    vector<lower=0>[N_total] phi;
     // epsilon for longitudinal data
-    vector[q] epsilon_t[N_subj*N_samp];
+    vector[q] epsilon_t[N_total];
