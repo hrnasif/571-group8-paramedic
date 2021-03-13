@@ -2,6 +2,8 @@
     int<lower=1> N_subj;
     // ---observed times for each individual---
     int<lower=1> N_samp;
+    // ---total number of observation---
+    int<lower=1> N_total;
     // num taxa with observed absolute abundance
     int<lower=1> q_obs;
     // overall num taxa
@@ -9,11 +11,11 @@
     // num covariates
     int<lower=0> d;
     // ----observed absolute abundance----
-    int<lower=0> V[N_subj*N_samp,q_obs];
+    int<lower=0> V[N_total,q_obs];
     // ----observed rel. abundance-----
-    int<lower=0> W[N_subj*N_samp,q];
+    int<lower=0> W[N_total,q];
     // ----feature matrix-----
-    matrix[N_subj*N_samp,d] X;
+    matrix[N_total,d] X;
     // hyperparameters that are fixed
     real sigma_beta;
     real sigma_Sigma;

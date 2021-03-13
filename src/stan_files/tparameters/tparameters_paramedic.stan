@@ -1,9 +1,9 @@
     //
     vector[q] log_mu;
     // ---- new model -----
-    vector[q] p[N_subj*N_samp];
-    vector[q] log_mu_t[N_subj*N_samp];
-    vector[q_obs] log_mu_tv[N_subj*N_samp];
+    vector[q] p[N_total];
+    vector[q] log_mu_t[N_total];
+    vector[q_obs] log_mu_tv[N_total];
     
     for (i in 1:N_subj) { 
         if (d > 0) {
