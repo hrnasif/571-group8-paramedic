@@ -36,17 +36,17 @@ library("MASS")
 ##         N_subj - number of subjects
 ##         N_samp - number of samples per subject
 ##         M - observed br16s reads (N-vector)
-##         corr - whether correlation within subjects should be considered
+##         corr_within - whether correlation within subjects should be considered
 ##         epsilon - If corr = T, then the N_subj sized array of sigma_epsilon vals
 ## RETURNS: X (qPCR), Y (br16s)
-data_func <- function(beta, Sigma, e, q, corr = F, sigma_epsilon = rep(1,N_subj),
+data_func <- function(beta, Sigma, e, q, corr_within = F, sigma_epsilon = rep(1,N_subj),
                       N_subj, N_samp, M) {
   
   ## generate the mus, given the means and covariance;
   ## returns an N x q matrix
   N = N_subj*N_samp
   
-  if (corr == F){
+  if (corr_within == F){
     log_mu <- MASS::mvrnorm(N, mu = beta, Sigma = Sigma)
   }
   

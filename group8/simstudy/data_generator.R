@@ -14,7 +14,7 @@
 # create data
 data_generator <- function(num_of_subjects, samples_per_subj, num_taxa, num_qpcr, seed, 
                            hyper_mean_mu, hyper_cov_mu,
-                           hyper_sigma, corr = F, hyper_sigma_epsilon,
+                           hyper_sigma, corr_within = F, hyper_sigma_epsilon,
                            hyper_m_min, hyper_m_max, use_most_abundant) {
   
   sample_size = num_of_subjects * samples_per_subj
@@ -39,7 +39,7 @@ data_generator <- function(num_of_subjects, samples_per_subj, num_taxa, num_qpcr
   set.seed(seed)
   
   # generate the data
-  tmp <- data_func(hyper_mean_mu, hyper_cov_mu, e, corr, hyper_sigma_epsilon,
+  tmp <- data_func(hyper_mean_mu, hyper_cov_mu, e, corr_within, hyper_sigma_epsilon,
                    num_taxa, num_of_subjects,samples_per_subject, m)
   ret$mu <- tmp$mu
   # knock out some qPCR information; always make it the final column(s) of Xstar, mu, Y
