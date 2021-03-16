@@ -119,8 +119,9 @@ prefix <- sprintf("%s/ve_%s/cov_%s/n_%s/n_%s/q_%s/q_obs_%s/",
                   args$N_samp,
                   args$q,
                   args$q_obs)
-if (!dir.exists(prefix)) {
-  dir.create(prefix, recursive = TRUE)
+fast_prefix <- paste0("../sim-data/", prefix)
+if (!dir.exists(fast_prefix)) {
+  dir.create(fast_prefix, recursive = TRUE)
 }
 
 ## make a different seed for each column of interest
@@ -150,21 +151,21 @@ mod_summ <- mod$summary
 # 
 ## save the output
 saveRDS(mod_summ, file = sprintf("%s/%s_mod_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
-                                 prefix,
+                                 fast_prefix,
                                  strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
                                  job_id,
                                  adapt_delta,
                                  max_treedepth,
                                  as.character(args$use_most_abundant)))
 saveRDS(dataset_with_truth, file = sprintf("%s/%s_data_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
-                                           prefix,
+                                           fast_prefix,
                                            strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
                                            job_id,
                                            adapt_delta,
                                            max_treedepth,
                                            as.character(args$use_most_abundant)))
 # saveRDS(samps, file = sprintf("%s/%s_samps_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
-#                               prefix,
+#                               fast_prefix,
 #                               strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
 #                               job_id,
 #                               adapt_delta,
