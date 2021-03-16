@@ -61,6 +61,10 @@ args$qobss <- (2:7)[1:args$num_qobss]
 args$ns <- seq(50, 300, 50)[1:args$num_ns]
 args$sigma_es <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)[1:args$num_sigmaes]
 
+if (args$sigma_epsilon == "random") {
+  args$sigma_epsilon <- rnorm(args$N_subj, mean=0, sd=1)
+}
+
 print(args)
 
 ## set up static simulation arguments

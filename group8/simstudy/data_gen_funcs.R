@@ -53,7 +53,7 @@ data_func <- function(beta, Sigma, e, q, corr_within = F, sigma_epsilon = rep(1,
   else{
     log_mu <- matrix(NA, nrow = N, ncol = q)
     for (i in 1:N){
-      subj <- floor(i/N_samp) + 1
+      subj <- floor((i-1)/N_samp) + 1
       Sigma_corr <- Sigma + diag(q)*sigma_epsilon[subj]^2
       log_mu[i,] <- MASS::mvrnorm(1, mu = beta, Sigma = Sigma_corr)
     }
