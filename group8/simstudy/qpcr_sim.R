@@ -28,6 +28,7 @@ source("data_generator.R")
 ## if you use a different HPC batch scheduler, edit "SLURM_ARRAY_TASK_ID" to the appropriate environment variable
 ## if you are running locally, you'll need to set the job id locally to one of 1--50 (for each of the 50 replicates)
 job_id <- as.numeric(Sys.getenv("SLURM_ARRAY_TASK_ID"))
+job_id <- 1
 
 ## set up dynamic simulation arguments
 parser <- ArgumentParser()
@@ -59,6 +60,10 @@ args$qs <- c(10, 20, 40, 60, 80, 100, 120)[1:args$num_qs]
 args$qobss <- (2:7)[1:args$num_qobss]
 args$ns <- seq(50, 300, 50)[1:args$num_ns]
 args$sigma_es <- c(0, 0.1, 0.2, 0.3, 0.4, 0.5)[1:args$num_sigmaes]
+
+if (args$sigma_epsilon == "random") {
+  args$sigma_epsilon <- rnorm(args$N_subj, mean=0, sd=1)^2
+}
 
 print(args)
 
@@ -93,7 +98,7 @@ samp_seed_vec <- sample(seed_vec)
 seed_mat <- array(samp_seed_vec, dim = c(args$B, num_q_obs, num_q, num_n, num_sigma_e))
 logi_q <- ifelse(length(args$q == 1), 1, which(args$q == args$qs))
 logi_q_obs <- ifelse(length(args$q_obs == 1), 1, which(args$q_obs == args$q_obss))
-current_seed <- seed_mat[job_id, logi_q_obs, logi_q, which(args$N == args$ns), which(args$sigma == args$sigma_es)] + 10000*args$use_most_abundant
+current_seed <- seed_mat[job_id, logi_q_obs, logi_q, which(args$N_subj*args$N_samp == args$ns), which(args$sigma == args$sigma_es)] + 10000*args$use_most_abundant
 print(current_seed)
 set.seed(current_seed)
 
@@ -102,17 +107,21 @@ dataset_with_truth <- data_generator(args$N_subj, args$N_samp, args$q, args$q_ob
                                      Sigma[1:args$q, 1:args$q], args$sigma, args$corr_within, args$sigma_epsilon, 
                                      m_min, m_max, args$use_most_abundant)
 dataset <- dataset_with_truth[(names(dataset_with_truth) %in% c("V", "W", "N", "q", "q_obs"))]
+colnames(dataset$W) <- c("subject_id", "time", c(1:args$q))
+colnames(dataset$V) <- c("subject_id", "time", c(1:args$q_obs))
 
 ## create output directory
-prefix <- sprintf("%s/ve_%s/cov_%s/n_%s/q_%s/q_obs_%s/",
+prefix <- sprintf("%s/ve_%s/cov_%s/n_%s/n_%s/q_%s/q_obs_%s/",
                   args$sim_name,
                   args$sigma,
                   args$corr,
-                  args$N,
+                  args$N_subj,
+                  args$N_samp,
                   args$q,
                   args$q_obs)
-if (!dir.exists(prefix)) {
-  dir.create(prefix, recursive = TRUE)
+fast_prefix <- paste0("../sim-data/", prefix)
+if (!dir.exists(fast_prefix)) {
+  dir.create(fast_prefix, recursive = TRUE)
 }
 
 ## make a different seed for each column of interest
@@ -129,34 +138,34 @@ params_to_save <- if (grepl("varying_efficiency", args$stan_model)) {
 
 # run the model
 set.seed(stan_seed)
-system.time(mod <- paramedic::run_paramedic(W = dataset$W, V = dataset$V, n_iter = args$iter,
+system.time(mod <- paramedic::run_paramedic(W = dataset$W, V = dataset$V, n_iter = args$iter, n_samp = args$N_samp,
                                             n_burnin = args$warmup, n_chains = args$n_chains, stan_seed = stan_seed,
-                                            params_to_save = params_to_save,
+                                            #params_to_save = params_to_save,
                                             control = list(adapt_delta = adapt_delta, max_treedepth = max_treedepth),
                                             verbose = FALSE, open_progress = FALSE))
 
-mod_summ <- summary(mod, probs = c(0.025, 0.975))$summary
+mod_summ <- mod$summary
 
-# extract samples
-samps <- extract(mod)
-
+# # extract samples
+samps <- extract(mod$stan_fit)
+# 
 ## save the output
 saveRDS(mod_summ, file = sprintf("%s/%s_mod_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
-                                 prefix,
+                                 fast_prefix,
                                  strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
                                  job_id,
                                  adapt_delta,
                                  max_treedepth,
                                  as.character(args$use_most_abundant)))
 saveRDS(dataset_with_truth, file = sprintf("%s/%s_data_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
-                                           prefix,
+                                           fast_prefix,
                                            strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
                                            job_id,
                                            adapt_delta,
                                            max_treedepth,
                                            as.character(args$use_most_abundant)))
 saveRDS(samps, file = sprintf("%s/%s_samps_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
-                              prefix,
+                              fast_prefix,
                               strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
                               job_id,
                               adapt_delta,

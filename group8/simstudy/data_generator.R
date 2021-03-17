@@ -11,16 +11,26 @@
 ## OUTPUTS: a stan model file saved as a .rds
 ##################################################################################
 
+library(extraDistr)
+
 # create data
-data_generator <- function(num_of_subjects, samples_per_subj, num_taxa, num_qpcr, seed, 
+data_generator <- function(N_subj, N_samp, num_taxa, num_qpcr, seed, 
                            hyper_mean_mu, hyper_cov_mu,
                            hyper_sigma, corr_within = F, hyper_sigma_epsilon,
-                           hyper_m_min, hyper_m_max, use_most_abundant) {
+                           hyper_m_min, hyper_m_max, use_most_abundant,
+                           mu_dist = "normal", e_dist = "normal",
+                           v_dist = "poisson", w_dist = "mult") {
   
-  sample_size = num_of_subjects * samples_per_subj
+  sample_size = N_subj * N_samp
   
   # get the efficiencies
-  e <- exp(rnorm(num_taxa, mean = 0, sd = hyper_sigma))
+  if (grepl("gamma", e_dist)) {
+    e <- rgamma(num_taxa, shape = hyper_sigma) 
+  } else if (grepl("normal", e_dist)) {
+    e <- exp(rnorm(num_taxa, mean = 0, sd = hyper_sigma))
+  } else {
+    e <- rht(num_taxa, nu = hyper_sigma)
+  }
   
   # get the copy number
   # cpy <- rep(1, sample_size)
@@ -39,8 +49,8 @@ data_generator <- function(num_of_subjects, samples_per_subj, num_taxa, num_qpcr
   set.seed(seed)
   
   # generate the data
-  tmp <- data_func(hyper_mean_mu, hyper_cov_mu, e, corr_within, hyper_sigma_epsilon,
-                   num_taxa, num_of_subjects,samples_per_subject, m)
+  tmp <- data_func(hyper_mean_mu, hyper_cov_mu, e, num_taxa, corr_within, hyper_sigma_epsilon,
+                   N_subj, N_samp, m, mu_dist, v_dist, w_dist)
   ret$mu <- tmp$mu
   # knock out some qPCR information; always make it the final column(s) of Xstar, mu, Y
   ret$Vstar <- tmp$V
@@ -64,6 +74,10 @@ data_generator <- function(num_of_subjects, samples_per_subj, num_taxa, num_qpcr
   } else {
     ret$V <- ret$Vstar
   }
+  subject_ids <- rep(1:N_subj, each=N_samp)
+  collection_times <- rep(1:N_samp, times=N_subj)
+  ret$W <- cbind(subject_ids, collection_times, ret$W)
+  ret$V <- cbind(subject_ids, collection_times, ret$V)
   
   return(ret)
 }
