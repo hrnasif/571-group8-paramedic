@@ -46,26 +46,32 @@ data_func <- function(beta, Sigma, e, q, corr_within = F, sigma_epsilon = rep(1,
   ## returns an N x q matrix
   N = N_subj*N_samp
   
-  log_mu <- matrix(NA, nrow = N, ncol = q)
+  # Generate subject specific means
+  N_tmp <- ifelse(corr_within, N_subj, N)
+  tmp_log_mu <- matrix(NA, nrow = N_tmp, ncol = q)
   if (grepl("normal", mu_dist)) {
-    log_mu <- MASS::mvrnorm(N, mu = beta, Sigma = Sigma)
+    tmp_log_mu <- MASS::mvrnorm(N_tmp, mu = beta, Sigma = Sigma)
   }
   else if (grepl("gamma", mu_dist)) {
     for (j in 1:q) {
-      log_mu[, j] <- log(rgamma(N, shape = beta[j], rate = Sigma[j]))
+      tmp_log_mu[, j] <- log(rgamma(N_tmp, shape = beta[j], rate = Sigma[j]))
     }
   }
   else {
     for (j in 1:q) {
-      log_mu[, j] <- rht(N, nu = beta[j], sigma = Sigma[j])
+      tmp_log_mu[, j] <- rht(N_tmp, nu = beta[j], sigma = Sigma[j])
     }
   }
   
-  if (corr_within != F) {
+  # Now introduce correlation
+  if (corr_within == F) {
+    log_mu <- tmp_log_mu
+  }
+  else {
+    log_mu <- matrix(NA, nrow = N, ncol = q)
     for (i in 1:N){
       subj <- floor((i-1)/N_samp) + 1
-      Sigma_corr <- Sigma + diag(q)*sigma_epsilon[subj]
-      log_mu[i,] <- rnorm(q, mean = 0, sigma_epsilon[subj])
+      log_mu[i,] <- tmp_log_mu[subj, ] + rnorm(q, mean = 0, sigma_epsilon[subj])
     }
   }
   
