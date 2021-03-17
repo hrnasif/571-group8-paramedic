@@ -147,7 +147,7 @@ system.time(mod <- paramedic::run_paramedic(W = dataset$W, V = dataset$V, n_iter
 mod_summ <- mod$summary
 
 # # extract samples
-# samps <- extract(mod)
+samps <- extract(mod$stan_fit)
 # 
 ## save the output
 saveRDS(mod_summ, file = sprintf("%s/%s_mod_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
@@ -164,10 +164,10 @@ saveRDS(dataset_with_truth, file = sprintf("%s/%s_data_jobid_%d_ad_%f_mt_%d_ab_%
                                            adapt_delta,
                                            max_treedepth,
                                            as.character(args$use_most_abundant)))
-# saveRDS(samps, file = sprintf("%s/%s_samps_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
-#                               fast_prefix,
-#                               strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
-#                               job_id,
-#                               adapt_delta,
-#                               max_treedepth,
-#                               as.character(args$use_most_abundant)))
+saveRDS(samps, file = sprintf("%s/%s_samps_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
+                              fast_prefix,
+                              strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
+                              job_id,
+                              adapt_delta,
+                              max_treedepth,
+                              as.character(args$use_most_abundant)))
