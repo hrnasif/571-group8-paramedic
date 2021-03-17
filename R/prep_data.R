@@ -130,9 +130,15 @@ make_paramedic_tibbles <- function(W, V, X, n_samp, k, inits_lst,
     }
     
     # Getting subject-specific standard deviations
-    sigma_epsilon <- V_tbl %>% dplyr::group_by(subject_id) %>%
-        dplyr::summarise(dplyr::across(!ends_with("id"), function(x){sd(log(x+1))})) %>% 
-        rowMeans()
+    if (n_samp == 1){ 
+        sigma_epsilon = rep(1, nrow(V))
+        }
+    
+    else{
+        sigma_epsilon <- V_tbl %>% dplyr::group_by(subject_id) %>%
+            dplyr::summarise(dplyr::across(!ends_with("id"), function(x){sd(log(x+1))})) %>% 
+            rowMeans()    
+    }
     
     return(list(w_tbl = W_tbl, v_tbl = V_tbl, x_tbl = X_tbl, 
                 w_mat = W_mat, v_mat = V_mat, x_mat = X_mat,
