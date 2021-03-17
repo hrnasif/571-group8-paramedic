@@ -40,22 +40,32 @@ library("MASS")
 ##         epsilon - If corr = T, then the N_subj sized array of sigma_epsilon vals
 ## RETURNS: X (qPCR), Y (br16s)
 data_func <- function(beta, Sigma, e, q, corr_within = F, sigma_epsilon = rep(1,N_subj),
-                      N_subj, N_samp, M) {
+                      N_subj, N_samp, M, mu_dist = "normal", v_dist = "poisson", w_dist = "mult") {
   
   ## generate the mus, given the means and covariance;
   ## returns an N x q matrix
   N = N_subj*N_samp
   
-  if (corr_within == F){
+  log_mu <- matrix(NA, nrow = N, ncol = q)
+  if (grepl("normal", mu_dist)) {
     log_mu <- MASS::mvrnorm(N, mu = beta, Sigma = Sigma)
   }
+  else if (grepl("gamma", mu_dist)) {
+    for (j in 1:q) {
+      log_mu[, j] <- log(rgamma(N, shape = beta[j], rate = Sigma[j]))
+    }
+  }
+  else {
+    for (j in 1:q) {
+      log_mu[, j] <- rht(N, nu = beta[j], sigma = Sigma[j])
+    }
+  }
   
-  else{
-    log_mu <- matrix(NA, nrow = N, ncol = q)
+  if (corr_within != F) {
     for (i in 1:N){
       subj <- floor((i-1)/N_samp) + 1
       Sigma_corr <- Sigma + diag(q)*sigma_epsilon[subj]
-      log_mu[i,] <- MASS::mvrnorm(1, mu = beta, Sigma = Sigma_corr)
+      log_mu[i,] <- rnorm(q, mean = 0, sigma_epsilon[subj])
     }
   }
   
@@ -65,7 +75,12 @@ data_func <- function(beta, Sigma, e, q, corr_within = F, sigma_epsilon = rep(1,
   ## generate the qPCR
   V <- matrix(NA, nrow = N, ncol = q)
   for (i in 1:q) {
-    V[, i] <- rpois(N, mu[, i])
+    if (grepl("poisson", v_dist)) {
+      V[, i] <- rpois(N, mu[, i])
+    }
+    else {
+      V[, i] <- rnbinom(N, size = mu[, i], mu = mu[, i])
+    }
     if (any(is.na(V[, i]))) { # if any are NA, fill with random sample from the others
       non_na <- V[!is.na(V[, i]), i]
       V[is.na(V[, i]), i] <- sample(non_na, sum(is.na(V[, i])), replace = TRUE)
@@ -75,7 +90,12 @@ data_func <- function(beta, Sigma, e, q, corr_within = F, sigma_epsilon = rep(1,
   ## generate the br16s reads
   W <- matrix(NA, nrow = N, ncol = q)
   for (j in 1:N) {
-    p_j <- e*mu[j, ]/sum(e*mu[j, ])
+    if (grepl("dirimult", w_dist)) {
+      p_j <- rdirichlet(n = 1, alpha = mu[j, ])
+    }
+    else {
+      p_j <- e*mu[j, ]/sum(e*mu[j, ])
+    }
     W[j, ] <- rmultinom(n = 1, size = M[j], prob = p_j)
   }
   

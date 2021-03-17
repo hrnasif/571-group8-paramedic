@@ -42,8 +42,8 @@ parser$add_argument("--q_obs", type = "double", default = 7, help = "how many ta
 parser$add_argument("--corr_within", type = "double", default = F, help = "choose whether within subject correlations are considered")
 parser$add_argument("--sigma_epsilon", default = "random", help = "array for subject-specific error standard deviations")
 parser$add_argument("--n-chains", type = "double", default = 1, help = "number of chains for MCMC")
-parser$add_argument("--iter", type = "double", default = 10000, help = "number of iterations per chain")
-parser$add_argument("--warmup", type = "double", default = 5000, help = "number of warmup iterations per chain")
+parser$add_argument("--iter", type = "double", default = 100, help = "number of iterations per chain")
+parser$add_argument("--warmup", type = "double", default = 50, help = "number of warmup iterations per chain")
 parser$add_argument("--B", type = "double", default = 50, help = "total number of MC reps per q, q^obs")
 parser$add_argument("--adapt-delta", type = "double", default = 0.85, help = "adapt_delta, for Stan fitting")
 parser$add_argument("--max-treedepth", type = "integer", default = 15, help = "max_treedepth, for Stan fitting")
@@ -56,18 +56,18 @@ if (args$sigma_epsilon == "random") {
     args$sigma_epsilon <- rnorm(args$N_subj, mean=0, sd=1)^2
 }
 
-if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) { # if running locally
-    args$iter <- 100
-    args$warmup <- 50
-    args$adapt_delta <- 0.85
-    args$max_treedepth <- 15
-    args$n_chains <- 1
-    args$q <- 40
-    args$q_obs <- 7
-    args$N <- 50
-    args$sim_name <- "misspec-normal-normal-negbin-mult"
-}
-print(paste0("Running sim ", args$sim_name, " with q = ", args$q, "; q_obs = ", args$q_obs, "; N = ", args$N, "."))
+# if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) { # if running locally
+#     args$iter <- 100
+#     args$warmup <- 50
+#     args$adapt_delta <- 0.85
+#     args$max_treedepth <- 15
+#     args$n_chains <- 1
+#     args$q <- 40
+#     args$q_obs <- 7
+#     args$N <- 50
+#     args$sim_name <- "misspec-normal-normal-negbin-mult"
+# }
+print(paste0("Running sim ", args$sim_name, " with q = ", args$q, "; q_obs = ", args$q_obs, "; N = ", args$N_subj*args$N_samp, "."))
 print(paste0("Stan parameters: adapt_delta = ", args$adapt_delta, "; treedepth = ", args$max_treedepth, "; num. burnin iter = ", args$warmup, "; num. total iter = ", args$iter, "; number of chains = ", args$n_chains))
 
 # ----------------------------------------------------------
@@ -129,6 +129,7 @@ last_combos <- data.frame(mu_dist = "normal", e_dist = "normal",
 final_sim_combos <- rbind.data.frame(all_sim_combos, last_combos)
 sim_names <- c(paste0("misspec-", apply(final_sim_combos[-9, ], 1, function(x) paste(x, collapse = "-"))),
                paste0("spec-", paste(final_sim_combos[9, ], collapse = "-")))[c(1:8, 12, 9:11)]
+print(sim_names)
 current_seed <- samp_seed_vec[job_id] + 10 * args$N_subj*args$N_samp + 1000 * which(args$sim_name == sim_names)
 print(paste0("Current seed: ", current_seed))
 set.seed(current_seed)
@@ -140,9 +141,9 @@ dataset_with_truth <- data_generator(N_subj = args$N_subj, N_samp = args$N_samp,
                                      hyper_sigma = hyper_sigma, corr_within = args$corr_within,
                                      hyper_sigma_epsilon = args$sigma_epsilon,
                                      hyper_m_min = args$m_min, hyper_m_max = args$m_max,
-                                     use_most_abundant = args$use_most_abundant)
-                                     # mu_dist = distns$mu, e_dist = distns$e,
-                                     # v_dist = distns$v, w_dist = distns$w)
+                                     use_most_abundant = args$use_most_abundant,
+                                     mu_dist = distns$mu, e_dist = distns$e,
+                                     v_dist = distns$v, w_dist = distns$w)
 dataset <- dataset_with_truth[(names(dataset_with_truth) %in% c("V", "W", "N", "q", "q_obs"))]
 colnames(dataset$W) <- c("subject_id", "time", c(1:args$q))
 colnames(dataset$V) <- c("subject_id", "time", c(1:args$q_obs))
