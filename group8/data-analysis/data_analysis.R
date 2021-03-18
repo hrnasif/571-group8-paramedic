@@ -18,10 +18,17 @@ new_V <- group8_qpcr_data_v2
 new_W$subject_id <- 1:nrow(new_W)
 new_V$subject_id <- 1:nrow(new_V)
 
-stdmod <- paramedic::run_paramedic(W = new_W, V = new_V, n_samp = 1,
-                                   k = 0, n_iter = 16000, n_burnin = 14000, n_chains = 1)
 
-saveRDS(stdmod, file = "group8/data-analysis/stdmod.rds")
+# Previous model with shorter iterations
+# stdmod <- paramedic::run_paramedic(W = new_W, V = new_V, n_samp = 1,
+#                                    k = 0, n_iter = 16000, n_burnin = 14000, n_chains = 1)
+# 
+# saveRDS(stdmod, file = "group8/data-analysis/stdmod.rds")
+
+stdmod <- paramedic::run_paramedic(W = new_W, V = new_V, n_samp = 1,
+                                   k = 0, n_iter = 25000, n_burnin = 24000, n_chains = 1)
+
+saveRDS(stdmod, file = "group8/data-analysis/stdmod_long.rds")
 
 
 #### Obtain data for heatmaps
@@ -135,12 +142,15 @@ full_props <- left_join(qpcr_props, model_props, by = c("subject_id", "sample_id
 full_props$Model <- as.factor(full_props$Model)
 
 props_line_sample <- ggplot(data = full_props, aes(x = qpcr_props, y = est_row_props)) + 
-  geom_point(aes(shape = Model, color = Model)) + 
-  geom_abline(intercept = 0, slope = 1, color = "darkgreen") +
-  labs(title = "Estimated vs. Observed Concentrations", x = "Observed (qPCR)",
-       y = "Estimated") 
+  geom_point(aes(shape = Model, color = Model), size = 2) + 
+  geom_abline(intercept = 0, slope = 1, color = "black") +
+  labs(title = "Estimated vs. Observed Relative Abundance by Sample", x = "Observed (qPCR)",
+       y = "Estimated") + 
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+                     panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
   
 props_line_sample
+ggsave("group8/data-analysis/sample_lineplot_long.png", plot = props_line_sample, width = 8, height = 3.5)
 
 
 
@@ -184,11 +194,15 @@ full_props_subj$Model <- as.factor(full_props_subj$Model)
 full_props_subj$subject_id <- as.factor(full_props_subj$subject_id)
 
 props_line_sample_subj <- ggplot(data = full_props_subj, aes(x = qpcr_props, y = est_row_props)) + 
-  geom_point(aes(shape = Model, color = subject_id)) + 
+  geom_point(aes(shape = Model, color = subject_id), size = 3) + 
   geom_abline(intercept = 0, slope = 1) +
-  labs(title = "Estimated vs. Observed Concentrations by Subject", x = "Observed (qPCR)",
-       y = "Estimated") 
+  labs(title = "Estimated vs. Observed Relative Abundance by Subject", x = "Observed (qPCR)",
+       y = "Estimated") +
+  theme_bw() + theme(panel.border = element_blank(), panel.grid.major = element_blank(),
+                     panel.grid.minor = element_blank(), axis.line = element_line(colour = "black"))
+
 
 props_line_sample_subj
+ggsave("group8/data-analysis/subj_lineplot_long.png", plot = props_line_sample_subj, width = 8, height = 3.5)
 
 
