@@ -36,7 +36,7 @@ getrmses <- function(param){
   omu <- matrix(omu, ncol = q, byrow = TRUE)
   amu <- mods$amod[1:(N_subj*param*q), 1]
   amu <- matrix(amu, ncol = q, byrow = TRUE)
-  nmu <- inits(data$W, data$V, n_samp = param)
+  nmu <- inits(mods$data$W, mods$data$V, n_samp = param)
   nmu <- exp(nmu[[1]]$log_mu_tilde)
   
   odiff <- truemu - omu
@@ -49,9 +49,9 @@ getrmses <- function(param){
 }
 
 rmses <- matrix(nrow = 3, ncol = length(N_samp))
-for (i in length(N_samp)){
+for (i in 1:length(N_samp)){
   param <- N_samp[i]
-  rmses[,i] <- getrmses(param)
+  rmses[, i] <- getrmses(param)
 }
 
 # Credible and prediction intervals
