@@ -206,6 +206,9 @@ saveRDS(samps, file = sprintf("%s/%s_samps_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
                               args$max_treedepth,
                               as.character(args$use_most_abundant)))
 
+dataset$W[,1] <- c(1:dim(dataset$W)[1])
+dataset$V[,1] <- c(1:dim(dataset$W)[1])
+
 set.seed(stan_seed)
 system.time(mod <- paramedic::run_paramedic(W = dataset$W, V = dataset$V, n_iter = args$iter, n_samp = 1,
                                             n_burnin = args$warmup, n_chains = args$n_chains, stan_seed = stan_seed,
