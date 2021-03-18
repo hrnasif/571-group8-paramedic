@@ -15,7 +15,12 @@
         // -----new model-----
         if (N_samp == 1){
             log_mu_t[i] = log_mu;
-            p[i] = softmax(log_mu_t[i]);
+            if (alpha_sigma > 0 && kappa_sigma > 0) {
+                    p[i] = softmax(log_mu_t[i] + log_e);
+                }
+                else {
+                    p[i] = softmax(log_mu_t[i]);
+                }
             log_mu_tv[i] = head(log_mu_t[i], q_obs);
         }
         else{
