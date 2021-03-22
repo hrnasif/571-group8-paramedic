@@ -206,6 +206,37 @@ saveRDS(samps, file = sprintf("%s/%s_samps_jobid_%d_ad_%f_mt_%d_ab_%s.rds",
                               args$max_treedepth,
                               as.character(args$use_most_abundant)))
 
+dataset$W[,1] <- c(1:dim(dataset$W)[1])
+dataset$V[,1] <- c(1:dim(dataset$W)[1])
+
+set.seed(stan_seed)
+system.time(mod <- paramedic::run_paramedic(W = dataset$W, V = dataset$V, n_iter = args$iter, n_samp = 1,
+                                            n_burnin = args$warmup, n_chains = args$n_chains, stan_seed = stan_seed,
+                                            #params_to_save = params_to_save,
+                                            control = list(adapt_delta = args$adapt_delta, max_treedepth = args$max_treedepth),
+                                            verbose = FALSE, open_progress = FALSE))
+
+mod_summ <- mod$summary
+
+# # extract samples
+samps <- extract(mod$stan_fit)
+# 
+## save the output
+saveRDS(mod_summ, file = sprintf("%s/%s_mod_jobid_%d_ad_%f_mt_%d_ab_%s_Amy.rds",
+                                 fast_prefix,
+                                 strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
+                                 job_id,
+                                 args$adapt_delta,
+                                 args$max_treedepth,
+                                 as.character(args$use_most_abundant)))
+saveRDS(samps, file = sprintf("%s/%s_samps_jobid_%d_ad_%f_mt_%d_ab_%s_Amy.rds",
+                              fast_prefix,
+                              strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE)[[length(strsplit(strsplit(args$stan_model, "/")[[1]], ".", fixed = TRUE))]][1],
+                              job_id,
+                              args$adapt_delta,
+                              args$max_treedepth,
+                              as.character(args$use_most_abundant)))
+
 # trace_plot_nms <- c("mu", "e", "beta_0", "Sigma")
 # fig_width <- fig_height <- 2590
 # cex <- 1.5
