@@ -16,6 +16,35 @@ getsim <- function(N_samp, q, qobs){
   return(list(data = data, omod = omod, osamps = osamps, amod = amod, asamps = asamps))
 }
 
+getsim_misspec <- function(simname){
+  folder <- paste(simname, "/n_5/n_10/q_10/q_obs_7", sep = "")
+  
+  #truemu <- matrix()
+  # N_samp= 5
+  data <- readRDS(paste("./sim-data/",folder,"/predict_qpcr_data_jobid_10_ad_0.850000_mt_15_ab_1.rds", sep = ""))
+  # Our model
+  omod <- readRDS(paste("./sim-data/", folder, "/predict_qpcr_mod_jobid_10_ad_0.850000_mt_15_ab_1.rds", sep = ""))
+  osamps <- readRDS(paste("./sim-data/", folder, "/predict_qpcr_samps_jobid_10_ad_0.850000_mt_15_ab_1.rds", sep = ""))
+  # Amy's model
+  amod <- readRDS(paste("./sim-data/", folder, "/predict_qpcr_mod_jobid_10_ad_0.850000_mt_15_ab_1_Amy.rds", sep = ""))
+  asamps <- readRDS(paste("./sim-data/", folder, "/predict_qpcr_samps_jobid_10_ad_0.850000_mt_15_ab_1_Amy.rds", sep = ""))
+  
+  return(list(data = data, omod = omod, osamps = osamps, amod = amod, asamps = asamps))
+}
+
+getsim_misspec_ours <- function(simname){
+  folder <- paste(simname, "/n_5/n_10/q_10/q_obs_7", sep = "")
+  
+  #truemu <- matrix()
+  # N_samp= 5
+  data <- readRDS(paste("./sim-data/",folder,"/predict_qpcr_data_jobid_10_ad_0.850000_mt_15_ab_1.rds", sep = ""))
+  # Our model
+  omod <- readRDS(paste("./sim-data/", folder, "/predict_qpcr_mod_jobid_10_ad_0.850000_mt_15_ab_1.rds", sep = ""))
+  osamps <- readRDS(paste("./sim-data/", folder, "/predict_qpcr_samps_jobid_10_ad_0.850000_mt_15_ab_1.rds", sep = ""))
+  
+  return(list(data = data, omod = omod, osamps = osamps))
+}
+
 mus <- function(mods, N_samp, q){
   omu <- mods$omod[1:(N_subj*N_samp*q), 1]
   omu <- matrix(omu, ncol = q, byrow = TRUE)
@@ -26,8 +55,7 @@ mus <- function(mods, N_samp, q){
   return(list(omu = omu, amu = amu, nmu = nmu))
 }
 
-getrmses <- function(N_samp, q, qobs){
-  mods <- getsim(N_samp, q, qobs)
+getrmses <- function(N_samp, q, qobs, mods){
   # True mus
   truemu <- mods$data$mu
   # Model mu estimates
@@ -42,8 +70,7 @@ getrmses <- function(N_samp, q, qobs){
   return(c(ormse, armse, nrmse))
 }
 
-getrmspes <- function(N_samp, q, qobs){
-  mods <- getsim(N_samp, q, qobs)
+getrmspes <- function(N_samp, q, qobs, mods){
   data <- mods$data
   vstar <- data$Vstar[,(qobs + 1):q]
   
@@ -53,16 +80,15 @@ getrmspes <- function(N_samp, q, qobs){
   nv <- mus$nmu[,(qobs + 1):q]
   
   odiff <- vstar - ov
-  ormspe <- sqrt(1/(param*N_subj*q)*sum(odiff^2))
+  ormspe <- sqrt(1/(N_subj*N_samp*q)*sum(odiff^2))
   adiff <- vstar - av
-  armspe <- sqrt(1/(param*N_subj*q)*sum(adiff^2))
+  armspe <- sqrt(1/(N_subj*N_samp*q)*sum(adiff^2))
   ndiff <- vstar - nv
-  nrmspe <- sqrt(1/(param*N_subj*q)*sum(ndiff^2))
+  nrmspe <- sqrt(1/(N_subj*N_samp*q)*sum(ndiff^2))
   return(c(ormspe, armspe, nrmspe))
 }
 
-getmucoverage <- function(N_samp, q, qobs){
-  mods <- getsim(N_samp, q, qobs)
+getmucoverage <- function(N_samp, q, qobs, mods){
   # True mus
   truemu <- mods$data$mu
   
@@ -93,8 +119,7 @@ getmucoverage <- function(N_samp, q, qobs){
   return(c(ocovmu, acovmu))
 }
 
-getvcoverage <- function(N_samp, q, qobs){
-  mods <- getsim(N_samp, q, qobs)
+getvcoverage <- function(N_samp, q, qobs, mods){
   data <- mods$data
   vstar <- data$Vstar[,(qobs + 1):q]
   
